@@ -154,7 +154,11 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     let active = true;
     import("lenis").then(({ default: Lenis }) => {
       if (!active) return;
-      instance = new Lenis({ duration: 1.1, smoothWheel: true });
+      instance = new Lenis({
+        duration: 1.1,
+        smoothWheel: true,
+        prevent: (node) => !!node.closest(".command-dialog"),
+      });
       const raf = (t: number) => {
         instance?.raf(t);
         requestAnimationFrame(raf);
@@ -166,6 +170,27 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
       instance?.destroy();
     };
   }, [reduceMotion]);
+  useEffect(() => {
+    if (!commandOpen) return;
+    const stopBackgroundScroll = (event: WheelEvent | TouchEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".command-dialog"))
+        return;
+      event.preventDefault();
+    };
+    document.addEventListener("wheel", stopBackgroundScroll, {
+      passive: false,
+      capture: true,
+    });
+    document.addEventListener("touchmove", stopBackgroundScroll, {
+      passive: false,
+      capture: true,
+    });
+    return () => {
+      document.removeEventListener("wheel", stopBackgroundScroll, true);
+      document.removeEventListener("touchmove", stopBackgroundScroll, true);
+    };
+  }, [commandOpen]);
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       document.documentElement.style.setProperty("--cursor-x", `${e.clientX}px`);

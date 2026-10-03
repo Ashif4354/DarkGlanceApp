@@ -2323,6 +2323,7 @@ a:focus-visible {
   max-height: min(370px, calc(100dvh - 150px));
   overflow-y: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   scrollbar-width: thin;
   padding: 9px;
 }

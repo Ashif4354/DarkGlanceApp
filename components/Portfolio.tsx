@@ -71,7 +71,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     [copied, setCopied] = useState(false),
     [role, setRole] = useState(0),
     [intro, setIntro] = useState(false),
-    [cursor, setCursor] = useState({ x: -100, y: -100, show: false });
+    [cursorVisible, setCursorVisible] = useState(false);
   const greetingCount = useRef(0),
     lastGreeting = useRef(0),
     reduceMotion = useReducedMotion();
@@ -168,11 +168,13 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
   }, [reduceMotion]);
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      setCursor({ x: e.clientX, y: e.clientY, show: true });
+      document.documentElement.style.setProperty("--cursor-x", `${e.clientX}px`);
+      document.documentElement.style.setProperty("--cursor-y", `${e.clientY}px`);
+      setCursorVisible(true);
       document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
       document.documentElement.style.setProperty("--my", `${e.clientY}px`);
     };
-    const onLeave = () => setCursor((c) => ({ ...c, show: false }));
+    const onLeave = () => setCursorVisible(false);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerout", onLeave);
     return () => {
@@ -210,15 +212,15 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     scrollTo(next);
   };
   return (
-    <>
+    <div className={commandOpen ? "palette-open" : undefined}>
       <div
         className="cursor-glow"
-        style={{ left: cursor.x, top: cursor.y, opacity: cursor.show ? 1 : 0 }}
+        style={{ opacity: cursorVisible ? 1 : 0 }}
         aria-hidden="true"
       />
       <div
         className="cursor-dot"
-        style={{ left: cursor.x, top: cursor.y, opacity: cursor.show ? 1 : 0 }}
+        style={{ opacity: cursorVisible ? 1 : 0 }}
         aria-hidden="true"
       />
       <IntroLoader />
@@ -821,7 +823,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                       window.open(site.identity.links.github, "_blank")
                     }
                   >
-                    <BrandIcon kind="github" />
+                    <BrandIcon kind="github" className="command-github-icon" />
                     GitHub<span>Open profile</span>
                   </Command.Item>
                   <Command.Item onSelect={() => setPirate(!pirate)}>
@@ -940,7 +942,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-    </>
+    </div>
   );
 }
 
@@ -1306,10 +1308,16 @@ function HeroMesh({ reduceMotion }: { reduceMotion: boolean }) {
   );
 }
 
-function BrandIcon({ kind }: { kind: "github" | "linkedin" | "instagram" }) {
+function BrandIcon({
+  kind,
+  className,
+}: {
+  kind: "github" | "linkedin" | "instagram";
+  className?: string;
+}) {
   if (kind === "github")
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
         <path
           fill="currentColor"
           d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.1c-3.1.68-3.76-1.32-3.76-1.32-.5-1.3-1.24-1.65-1.24-1.65-1.02-.7.08-.69.08-.69 1.13.08 1.73 1.16 1.73 1.16 1 1.72 2.61 1.22 3.25.93.1-.73.4-1.23.71-1.52-2.48-.28-5.09-1.24-5.09-5.53 0-1.22.43-2.22 1.16-3-.12-.29-.5-1.43.11-2.98 0 0 .95-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.55.23 2.69.11 2.98.73.78 1.16 1.78 1.16 3 0 4.3-2.61 5.24-5.1 5.52.4.35.76 1.03.76 2.08v3.12c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"
@@ -1318,7 +1326,7 @@ function BrandIcon({ kind }: { kind: "github" | "linkedin" | "instagram" }) {
     );
   if (kind === "linkedin")
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
+      <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
         <path
           fill="currentColor"
           d="M5.2 3.3a2.1 2.1 0 1 1-4.2 0 2.1 2.1 0 0 1 4.2 0ZM1.3 7h3.7v15.2H1.3zm6 0h3.6v2.1h.1c.5-1 1.8-2.2 3.8-2.2 4 0 4.8 2.6 4.8 6v9.3h-3.8V14c0-2-.1-4.5-2.7-4.5s-3.1 2.1-3.1 4.4v8.3H7.3Z"
@@ -1326,7 +1334,7 @@ function BrandIcon({ kind }: { kind: "github" | "linkedin" | "instagram" }) {
       </svg>
     );
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path
         fill="currentColor"
         d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4Zm9.8 1.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"

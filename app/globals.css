@@ -77,7 +77,7 @@ a:focus-visible {
   height: 200%;
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
-  animation: grain 0.22s steps(2) infinite;
+  animation: grain 0.55s steps(2) infinite;
 }
 @keyframes grain {
   0% {
@@ -103,7 +103,10 @@ a:focus-visible {
   height: 280px;
   pointer-events: none;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
+  left: var(--cursor-x, -100px);
+  top: var(--cursor-y, -100px);
+  transform: translate3d(-50%, -50%, 0);
+  will-change: left, top;
   background: radial-gradient(circle, #ff8a0019, transparent 68%);
   transition: opacity 0.3s;
 }
@@ -115,7 +118,10 @@ a:focus-visible {
   pointer-events: none;
   border-radius: 50%;
   background: #ffc25a;
-  transform: translate(-50%, -50%);
+  left: var(--cursor-x, -100px);
+  top: var(--cursor-y, -100px);
+  transform: translate3d(-50%, -50%, 0);
+  will-change: left, top;
   box-shadow: 0 0 12px #ff8a00aa;
 }
 .rubber-mode .cursor-glow {
@@ -2266,19 +2272,26 @@ a:focus-visible {
 }
 .command-overlay {
   z-index: 90;
+  background: #0009;
 }
 .command-dialog {
   position: fixed;
   z-index: 91;
   left: 50%;
-  top: 20%;
-  transform: translateX(-50%);
-  width: min(560px, calc(100vw - 26px));
+  top: max(12px, 14vh);
+  transform: translate3d(-50%, 0, 0);
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
   border: 1px solid #ffffff20;
   border-radius: 17px;
   background: #100b09;
-  box-shadow: 0 30px 90px #000c;
+  box-shadow: 0 24px 64px #000b;
   overflow: hidden;
+}
+.command-dialog [cmdk-root] {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
 }
 .command-input-wrap {
   display: flex;
@@ -2307,8 +2320,10 @@ a:focus-visible {
   font: 9px var(--font-mono);
 }
 .command-dialog [cmdk-list] {
-  max-height: 370px;
-  overflow: auto;
+  max-height: min(370px, calc(100dvh - 150px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   padding: 9px;
 }
 .command-dialog [cmdk-group-heading] {
@@ -2318,7 +2333,9 @@ a:focus-visible {
   letter-spacing: 0.12em;
 }
 .command-dialog [cmdk-item] {
-  height: 38px;
+  min-height: 42px;
+  height: auto;
+  line-height: 1.3;
   padding: 0 10px;
   display: flex;
   align-items: center;
@@ -2333,7 +2350,19 @@ a:focus-visible {
   color: #ffd19b;
 }
 .command-dialog [cmdk-item] svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   color: #bc8e64;
+}
+.command-dialog [cmdk-item] svg viewBox {
+  vector-effect: none;
+}
+.command-dialog [cmdk-item] > .command-github-icon {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  overflow: visible;
 }
 .command-dialog [cmdk-item] span {
   margin-left: auto;
@@ -2353,6 +2382,19 @@ a:focus-visible {
   border-top: 1px solid #ffffff12;
   color: #706257;
   font: 8px var(--font-mono);
+}
+.command-dialog .command-github-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+  align-self: center;
+}
+.palette-open .grain,
+.palette-open .cursor-glow,
+.palette-open .cursor-dot {
+  animation-play-state: paused;
 }
 .egg-backdrop {
   z-index: 100;
@@ -3006,10 +3048,38 @@ a:focus-visible {
     flex-wrap: wrap;
   }
   .command-dialog {
-    top: 12%;
+    top: max(10px, env(safe-area-inset-top));
+    width: calc(100vw - 20px);
+    border-radius: 15px;
   }
   .command-dialog [cmdk-list] {
-    max-height: 60vh;
+    max-height: calc(100dvh - 130px);
+    max-height: calc(100svh - 130px);
+    padding: 7px;
+  }
+  .command-input-wrap {
+    gap: 9px;
+    padding: 13px 12px;
+  }
+  .command-input-wrap input {
+    min-width: 0;
+    font-size: 16px;
+  }
+  .command-foot {
+    justify-content: space-between;
+    gap: 6px;
+    padding: 10px;
+    font-size: 7px;
+  }
+  .command-dialog [cmdk-item] {
+    min-height: 44px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .command-dialog [cmdk-item] span {
+    max-width: 42%;
+    text-align: right;
+    font-size: 8px;
   }
   .not-found {
     padding: 30px;
@@ -3030,6 +3100,10 @@ a:focus-visible {
   }
   .skill-marquees .marquee-track {
     animation-duration: 105s;
+  }
+  .grain {
+    animation: none;
+    opacity: 0.018;
   }
 }
 @media (prefers-reduced-motion: reduce) {

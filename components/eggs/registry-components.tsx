@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Volume2, VolumeX } from "lucide-react";
 
 export type EggViewProps = {
@@ -151,24 +151,219 @@ export function Poneglyph({
     </button>
   );
 }
-export function useAudioBell() {
-  const [muted, setMuted] = useState(true);
-  const play = () => {
-    if (muted) return;
-    try {
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(740, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.22);
-      gain.gain.setValueAtTime(0.055, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.36);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.36);
-    } catch {}
-  };
-  return { muted, setMuted, play };
+export const DENDEN_AUDIO = {
+  ring: "https://cdn.darkglance.in/portfolio/assets/dendenmushi-pere.mp3",
+  pickup: "https://cdn.darkglance.in/portfolio/assets/dendenmushi-gachak.mp3",
+  rickroll: "https://cdn.darkglance.in/portfolio/assets/rickroll.mp3",
+} as const;
+
+// Module-level cache so audio elements are created once and kept in memory
+const audioCache = new Map<string, HTMLAudioElement>();
+
+function getCachedAudio(url: string, loop = false): HTMLAudioElement | null {
+  if (typeof window === "undefined") return null;
+  let audio = audioCache.get(url);
+  if (!audio) {
+    audio = new Audio(url);
+    audio.preload = "auto";
+    audioCache.set(url, audio);
+  }
+  audio.loop = loop;
+  return audio;
+}
+
+function safePlay(audio: HTMLAudioElement): Promise<void> {
+  try {
+    const promise = audio.play();
+    if (promise !== undefined) {
+      return promise.catch(() => {
+        // Handled: browser autoplay restrictions or pause interrupts
+      });
+    }
+  } catch {}
+  return Promise.resolve();
+}
+
+function safePause(audio: HTMLAudioElement, reset = false) {
+  try {
+    audio.pause();
+    if (reset) {
+      audio.currentTime = 0;
+    }
+  } catch {}
+}
+
+export type AudioBellOptions = {
+  isRinging?: boolean;
+  rickrollDelaySeconds?: number;
+};
+
+export function useAudioBell(options?: AudioBellOptions) {
+  const [muted, setMutedState] = useState(true);
+  const isRinging = Boolean(options?.isRinging);
+  const rickrollDelaySeconds = options?.rickrollDelaySeconds ?? 2;
+
+  const isRingingRef = useRef(isRinging);
+  isRingingRef.current = isRinging;
+
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+
+  const ringAudioRef = useRef<HTMLAudioElement | null>(null);
+  const pickupAudioRef = useRef<HTMLAudioElement | null>(null);
+  const rickrollAudioRef = useRef<HTMLAudioElement | null>(null);
+  const rickrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isRickrollingRef = useRef(false);
+
+  // Preload and cache all audio files on mount
+  useEffect(() => {
+    const ringAudio = getCachedAudio(DENDEN_AUDIO.ring, true);
+    const pickupAudio = getCachedAudio(DENDEN_AUDIO.pickup, false);
+    const rickrollAudio = getCachedAudio(DENDEN_AUDIO.rickroll, false);
+    ringAudioRef.current = ringAudio;
+    pickupAudioRef.current = pickupAudio;
+    rickrollAudioRef.current = rickrollAudio;
+
+    // Trigger preload into browser HTTP and media buffer cache
+    ringAudio?.load();
+    pickupAudio?.load();
+    rickrollAudio?.load();
+
+    // CacheStorage warming if supported
+    if (typeof window !== "undefined" && "caches" in window) {
+      caches
+        .open("darkglance-audio-cache-v1")
+        .then((cache) => {
+          [DENDEN_AUDIO.ring, DENDEN_AUDIO.pickup, DENDEN_AUDIO.rickroll].forEach((url) => {
+            cache.match(url).then((matched) => {
+              if (!matched) {
+                fetch(url, { mode: "no-cors" })
+                  .then((res) => cache.put(url, res))
+                  .catch(() => {});
+              }
+            });
+          });
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  // Synchronize playback with sound toggle & ringing state
+  useEffect(() => {
+    const ringAudio = ringAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.ring, true);
+    if (!ringAudio) return;
+
+    if (!muted && isRinging) {
+      safePlay(ringAudio);
+    } else {
+      safePause(ringAudio, true);
+    }
+
+    return () => {
+      safePause(ringAudio, true);
+    };
+  }, [muted, isRinging]);
+
+  // Pause playback if the user leaves/switches the tab, resume if still playing on return
+  useEffect(() => {
+    const handleVisibility = () => {
+      const ringAudio = ringAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.ring, true);
+      const rickrollAudio = rickrollAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.rickroll, false);
+      if (document.hidden) {
+        if (ringAudio) safePause(ringAudio, false);
+        if (rickrollAudio) safePause(rickrollAudio, false);
+      } else if (!mutedRef.current) {
+        if (isRingingRef.current && ringAudio) {
+          safePlay(ringAudio);
+        } else if (isRickrollingRef.current && rickrollAudio) {
+          safePlay(rickrollAudio);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // Handle direct user gesture for muting/unmuting
+  const setMuted = useCallback((nextMuted: boolean | ((prev: boolean) => boolean)) => {
+    setMutedState((prev) => {
+      const resolved = typeof nextMuted === "function" ? nextMuted(prev) : nextMuted;
+      const ringAudio = ringAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.ring, true);
+      const rickrollAudio = rickrollAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.rickroll, false);
+
+      if (resolved) {
+        // Muted: stop ringing, cancel pending rickroll, pause active playback
+        if (ringAudio) safePause(ringAudio, true);
+        if (rickrollTimerRef.current) {
+          clearTimeout(rickrollTimerRef.current);
+          rickrollTimerRef.current = null;
+        }
+        if (rickrollAudio) safePause(rickrollAudio, false);
+      } else {
+        // Unmuted: resume ringing if still incoming or resume rickroll if previously active
+        if (isRingingRef.current && ringAudio) {
+          ringAudio.currentTime = 0;
+          safePlay(ringAudio);
+        } else if (isRickrollingRef.current && rickrollAudio) {
+          safePlay(rickrollAudio);
+        }
+      }
+      return resolved;
+    });
+  }, []);
+
+  // Called when picking up the phone: stops ringing, plays pickup sound, and queues Rickroll
+  const play = useCallback(() => {
+    // 1. Immediately stop the ringing loop
+    const ringAudio = ringAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.ring, true);
+    if (ringAudio) {
+      safePause(ringAudio, true);
+    }
+
+    if (rickrollTimerRef.current) {
+      clearTimeout(rickrollTimerRef.current);
+      rickrollTimerRef.current = null;
+    }
+
+    // 2. Play pickup audio if sound is on
+    if (!mutedRef.current) {
+      const pickupAudio = pickupAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.pickup, false);
+      if (pickupAudio) {
+        pickupAudio.currentTime = 0;
+        safePlay(pickupAudio);
+      }
+
+      // 3. Wait N seconds and play Rickroll audio
+      const delayMs = Math.max(0, rickrollDelaySeconds * 1000);
+      rickrollTimerRef.current = setTimeout(() => {
+        rickrollTimerRef.current = null;
+        if (!mutedRef.current) {
+          const rickrollAudio = rickrollAudioRef.current ?? getCachedAudio(DENDEN_AUDIO.rickroll, false);
+          if (rickrollAudio) {
+            isRickrollingRef.current = true;
+            rickrollAudio.currentTime = 0;
+            safePlay(rickrollAudio);
+            rickrollAudio.onended = () => {
+              isRickrollingRef.current = false;
+            };
+          }
+        }
+      }, delayMs);
+    }
+  }, [rickrollDelaySeconds]);
+
+  // Clean up timer and stop playback on unmount
+  useEffect(() => {
+    return () => {
+      if (rickrollTimerRef.current) {
+        clearTimeout(rickrollTimerRef.current);
+      }
+      const ringAudio = ringAudioRef.current;
+      const rickrollAudio = rickrollAudioRef.current;
+      if (ringAudio) safePause(ringAudio, true);
+      if (rickrollAudio) safePause(rickrollAudio, true);
+    };
+  }, []);
+
+  return { muted, setMuted, play, playPickup: play };
 }

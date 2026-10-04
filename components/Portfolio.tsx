@@ -108,7 +108,10 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     glowRef = useRef<HTMLDivElement>(null),
     dotRef = useRef<HTMLDivElement>(null),
     reduceMotion = useReducedMotion();
-  const bell = useAudioBell();
+  const bell = useAudioBell({
+    isRinging: pirate && !callAnswered,
+    rickrollDelaySeconds: 2,
+  });
   const heroLongPress = useLongPress(() => openEgg("haki"), 1000, pirate);
   useEffect(() => setStarTotal(pulse.stars), [pulse.stars, setStarTotal]);
   const visibleProjects = useMemo(
@@ -771,7 +774,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
               <div className="snail-label">
                 <span className="eyebrow">INCOMING MESSAGE</span>
                 <span className="snail-signal">
-                  <i /> RINGING
+                  <i /> {callAnswered ? "CONNECTED" : "RINGING"}
                 </span>
               </div>
               {pirate && (
@@ -780,6 +783,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                   setMuted={bell.setMuted}
                   reveal={callAnswered}
                   onPick={() => {
+                    if (callAnswered) return;
                     bell.play();
                     setCallAnswered(true);
                     document

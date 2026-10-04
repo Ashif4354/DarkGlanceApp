@@ -6,7 +6,7 @@ These triggers are intentionally not listed on the live site. Original CSS/SVG a
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Wanted Poster          | Konami sequence, type `luffy` or `one piece`, or tap the footer mark five times. Download and share actions are provided. |
 | Log Pose               | Compass at the lower left on desktop; points to the next section and scrolls on click.                                    |
-| Den Den Mushi          | Contact section. Enable sound and pick up the call to hear a synthesized ring and reveal the email.                       |
+| Den Den Mushi          | Contact section. Enable sound to hear the ringing Den Den Mushi tone and pick up the call to hear the pickup sound and reveal the email, followed by a surprise Rickroll transmission. |
 | Devil Fruit skills     | Hover, focus, or tap one of the strong skill chips.                                                                       |
 | Conqueror’s Haki       | Hold Space for one second near the hero on desktop, or long-press the hero title on touch.                                |
 | Observation Haki       | Press `H` or choose it in Cmd/Ctrl+K; press `H` or Esc to turn it off.                                                    |
@@ -23,5 +23,5 @@ Pirate mode is toggled in Cmd/Ctrl+K and persists locally. When disabled, egg in
 ## Follow-up items
 
 - Replace the poster initials with an original owner illustration if desired.
-- Optional: tune the synthesized ring pitch/duration.
+- Den Den Mushi ringing and pickup audios are served from the high-speed CDN and pre-cached in memory and HTTP cache.
 - The hero ship-wheel intro is non-blocking and must remain under 1.5 seconds.

@@ -101,6 +101,10 @@ export default function RootLayout({
       lang="en"
       className={`${display.variable} ${geist.variable} ${mono.variable} ${cinzel.variable}`}
     >
+      <head>
+        <link rel="preconnect" href="https://cdn.darkglance.in" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://cdn.darkglance.in" />
+      </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body>
         <script

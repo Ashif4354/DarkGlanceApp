@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Cinzel } from "next/font/google";
 import { site } from "@/data/site";
+import { SEO_CONFIG, SITE_URL, generateStructuredData } from "@/lib/seo";
 import { EggProvider } from "@/components/eggs/EggProvider";
 import { GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
@@ -26,79 +27,103 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
   display: "swap",
 });
+
 export const metadata: Metadata = {
-  ...(process.env.NEXT_PUBLIC_SITE_URL
-    ? { metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL) }
-    : {}),
-  title: "DarkGlance — FullStack Developer",
-  description:
-    "I build tools nobody asked for, then everybody needs. Projects, experiments, and open-source work by Ashif.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SEO_CONFIG.title,
+    template: SEO_CONFIG.titleTemplate,
+  },
+  description: SEO_CONFIG.description,
+  applicationName: "DarkGlance",
+  authors: [
+    {
+      name: `${site.identity.name} (${site.identity.handle})`,
+      url: SITE_URL,
+    },
+  ],
+  generator: "Next.js",
+  keywords: SEO_CONFIG.keywords,
+  creator: site.identity.name,
+  publisher: site.identity.handle,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
+  },
   openGraph: {
-    title: "DarkGlance — FullStack Developer",
-    description: "Independent builder from Chennai, India.",
-    ...(process.env.NEXT_PUBLIC_SITE_URL
-      ? {
-          url: process.env.NEXT_PUBLIC_SITE_URL,
-          images: [
-            {
-              url: new URL(
-                "/opengraph-image",
-                process.env.NEXT_PUBLIC_SITE_URL,
-              ).toString(),
-            },
-          ],
-        }
-      : {}),
+    title: SEO_CONFIG.title,
+    description: SEO_CONFIG.description,
+    url: SITE_URL,
     siteName: "DarkGlance",
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: SEO_CONFIG.title,
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DarkGlance — FullStack Developer",
-    description: "I build tools nobody asked for, then everybody needs.",
-    ...(process.env.NEXT_PUBLIC_SITE_URL
-      ? {
-          images: [
-            new URL(
-              "/opengraph-image",
-              process.env.NEXT_PUBLIC_SITE_URL,
-            ).toString(),
-          ],
-        }
-      : {}),
+    title: SEO_CONFIG.title,
+    description: site.identity.tagline,
+    creator: "@ig_darkglance",
+    site: "@ig_darkglance",
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   icons: {
-    icon: site.identity.logo,
-    shortcut: site.identity.logo,
-    apple: site.identity.logo,
+    icon: [
+      { url: "/favicon.ico" },
+      { url: site.identity.logo, type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: site.identity.logo }],
   },
+  category: "technology",
+  classification: "Software Engineering & Developer Portfolio",
   other: {
     "google-adsense-account": "ca-pub-6347040738150367",
+    author: `${site.identity.name} (${site.identity.handle})`,
+    subject: "Software Engineering & Open Source Projects",
+    rating: "General",
   },
 };
+
 export const viewport: Viewport = {
   themeColor: "#050202",
   colorScheme: "dark",
 };
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const person = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: site.identity.name,
-    alternateName: site.identity.handle,
-    image: site.identity.logo,
-    jobTitle: site.identity.title,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Chennai",
-      addressCountry: "IN",
-    },
-    url: "https://darkglance.in",
-    sameAs: Object.values(site.identity.links),
-  };
+  const structuredData = generateStructuredData();
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html
       lang="en"
@@ -107,12 +132,18 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://cdn.darkglance.in" crossOrigin="" />
         <link rel="dns-prefetch" href="https://cdn.darkglance.in" />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="DarkGlance Projects RSS Feed"
+          href="/feed.xml"
+        />
       </head>
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <EggProvider>{children}</EggProvider>
       </body>

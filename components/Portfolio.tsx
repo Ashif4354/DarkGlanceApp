@@ -31,6 +31,7 @@ import {
   Poneglyph,
   SnailPhone,
   useAudioBell,
+  HagoromoClouds,
 } from "@/components/eggs/registry-components";
 
 type Pulse = {
@@ -90,6 +91,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     observation,
     toggleObservation,
     toggleJoy,
+    joy,
     setStarTotal,
   } = useEggs();
   const [active, setActive] = useState("home"),
@@ -374,6 +376,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
         <section className="hero" id="home" data-section>
           <HeroMesh reduceMotion={!!reduceMotion} />
           <div className="hero-vignette" />
+          {joy && <HagoromoClouds />}
           <div className="hero-content">
             <div className="hero-kicker">
               <span className="status-pip" /> <span>INDEPENDENT DEVELOPER</span>
@@ -980,8 +983,13 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                       >
                         ???<span>A hidden poster</span>
                       </Command.Item>
-                      <Command.Item onSelect={() => toggleJoy()}>
-                        ✨ Gear 5<span>Joy mode · 15 sec</span>
+                      <Command.Item
+                        onSelect={() => {
+                          setCommandOpen(false);
+                          toggleJoy();
+                        }}
+                      >
+                        ✨ Gear 5<span>Joy Boy Mode · 15 sec</span>
                       </Command.Item>
                       <Command.Item
                         onSelect={() => {
@@ -1454,29 +1462,25 @@ const HeroMesh = memo(function HeroMesh({
           );
         };
         resize();
+        let targetMouseX = 0.5;
+        let targetMouseY = 0.5;
         const mouse = (e: PointerEvent) => {
-          if (!program) return;
-          program.uniforms.u_mouse.value.set(
-            e.clientX / bWidth,
-            1 - e.clientY / bHeight,
-          );
+          targetMouseX = e.clientX / bWidth;
+          targetMouseY = 1 - e.clientY / bHeight;
         };
         window.addEventListener("resize", resize, { passive: true });
         window.addEventListener("pointermove", mouse, { passive: true });
+        let isHeroVisible = true;
         const observer = new IntersectionObserver(([entry]) => {
-          document.documentElement.dataset.heroVisible = entry.isIntersecting
-            ? "yes"
-            : "no";
+          isHeroVisible = entry.isIntersecting;
         });
         observer.observe(ref.current!);
         let raf = 0;
         const draw = (time: number) => {
           if (!running) return;
-          if (
-            !document.hidden &&
-            document.documentElement.dataset.heroVisible !== "no"
-          ) {
+          if (!document.hidden && isHeroVisible) {
             program!.uniforms.u_time.value = time * 0.001;
+            program!.uniforms.u_mouse.value.set(targetMouseX, targetMouseY);
             renderer!.render({ scene: mesh!, camera: camera! });
           }
           raf = requestAnimationFrame(draw);

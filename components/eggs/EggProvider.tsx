@@ -200,7 +200,7 @@ export function EggProvider({ children }: { children: React.ReactNode }) {
   }, [pirate, rubber]);
   useEffect(() => {
     if (!joy) return;
-    document.title = "Joy mode · DarkGlance";
+    document.title = "Joy Boy Mode · DarkGlance";
     const timer = setTimeout(() => setJoy(false), 15000);
     return () => {
       document.title = "DarkGlance — FullStack Developer";

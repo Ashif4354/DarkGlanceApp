@@ -74,7 +74,7 @@ export const eggRegistry: EggDefinition[] = [
   },
   {
     id: "gear-5",
-    name: "Gear 5 / Joy mode",
+    name: "Gear 5 / Joy Boy Mode",
     trigger: "Cmd/Ctrl+K → Gear 5",
     hint: "Gear 5",
     component: sharedEggComponents,

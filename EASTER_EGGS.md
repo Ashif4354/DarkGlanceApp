@@ -11,7 +11,7 @@ These triggers are intentionally not listed on the live site. Original CSS/SVG a
 | Conqueror’s Haki       | Hold Space for one second near the hero on desktop, or long-press the hero title on touch.                                |
 | Observation Haki       | Press `H` or choose it in Cmd/Ctrl+K; press `H` or Esc to turn it off.                                                    |
 | Gomu Gomu cursor       | Type `gomu` to toggle the rubber cursor.                                                                                  |
-| Gear 5 / Joy mode      | Choose Gear 5 in Cmd/Ctrl+K; it ends after 15 seconds or when toggled again.                                              |
+| Gear 5 / Joy Boy Mode  | Choose Gear 5 in Cmd/Ctrl+K; it ends after 15 seconds or when toggled again.                                              |
 | Poneglyph hunt         | Collect the three faint glyphs near the hero cue, project grid, and footer/contact area. Progress appears in Cmd/Ctrl+K.  |
 | Ship wheel loader      | Short page-load intro.                                                                                                    |
 | Lost in the Grand Line | Visit any unknown route (custom 404).                                                                                     |

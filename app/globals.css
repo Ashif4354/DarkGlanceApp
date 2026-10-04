@@ -94,6 +94,8 @@ a:focus-visible {
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
   transform: translateZ(0);
+  contain: strict;
+  will-change: opacity;
 }
 .cursor-glow {
   position: fixed;
@@ -292,7 +294,7 @@ a:focus-visible {
     radial-gradient(ellipse at 62% 54%, #9a5100 0, transparent 37%),
     radial-gradient(ellipse at 84% 40%, #602642 0, transparent 32%),
     radial-gradient(ellipse at 30% 70%, #7d1426 0, transparent 34%), #050202;
-  filter: saturate(1.1);
+  will-change: transform;
   animation: mesh-drift 17s ease-in-out infinite alternate;
 }
 .hero-mesh canvas {
@@ -316,12 +318,10 @@ a:focus-visible {
 }
 @keyframes mesh-drift {
   0% {
-    transform: scale(1);
-    filter: saturate(1);
+    transform: scale3d(1, 1, 1);
   }
   100% {
-    transform: scale(1.06);
-    filter: saturate(1.35);
+    transform: scale3d(1.04, 1.04, 1);
   }
 }
 .hero-content {
@@ -2076,8 +2076,24 @@ a:focus-visible {
 .joy-mode .project-card {
   animation: bouncy 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
 }
-.joy-mode {
-  filter: sepia(0.12) brightness(1.15);
+.joy-mode:before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 52;
+  background: radial-gradient(circle at 50% 30%, rgba(255, 185, 60, 0.08), rgba(255, 120, 0, 0.035));
+  mix-blend-mode: screen;
+  will-change: opacity;
+  animation: joy-ambient-breathe 6s ease-in-out infinite alternate;
+}
+@keyframes joy-ambient-breathe {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 @keyframes bouncy {
   50% {

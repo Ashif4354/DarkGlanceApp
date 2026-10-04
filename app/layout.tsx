@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Cinzel } from "next/font/google";
 import { site } from "@/data/site";
 import { EggProvider } from "@/components/eggs/EggProvider";
 import { GoogleTagManager } from "@next/third-parties/google";
@@ -19,6 +19,11 @@ const geist = Geist({
 const mono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  display: "swap",
+});
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  variable: "--font-cinzel",
   display: "swap",
 });
 export const metadata: Metadata = {
@@ -94,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${geist.variable} ${mono.variable}`}
+      className={`${display.variable} ${geist.variable} ${mono.variable} ${cinzel.variable}`}
     >
       {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body>

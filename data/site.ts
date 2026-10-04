@@ -29,8 +29,8 @@ export const site = {
     title: "FullStack Developer",
     location: "Chennai, India",
     email: "darkglance.developer@gmail.com",
-    logo: "https://cdn.darkglance.in/portfolio/me/DG.png",
-    avatar: "https://cdn.darkglance.in/portfolio/me/DG.png",
+    logo: "https://cdn.darkglance.in/portfolio/assets/DG.png",
+    avatar: "https://cdn.darkglance.in/portfolio/assets/DG.png",
     tagline: "I build tools nobody asked for, then everybody needs.",
     bio: "I love building something new—sometimes for my own use cases, sometimes for someone else’s. It’s my hobby, my passion, and usually how I spend a free afternoon. Most of my projects are public and MIT licensed. Also, I’m a big One Piece fan.",
     links: {

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { site } from "@/data/site";
 import { EggProvider } from "@/components/eggs/EggProvider";
+import { GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import "./effects.css";
 
@@ -89,11 +90,13 @@ export default function RootLayout({
     url: "https://darkglance.in",
     sameAs: Object.values(site.identity.links),
   };
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
   return (
     <html
       lang="en"
       className={`${display.variable} ${geist.variable} ${mono.variable}`}
     >
+      {gtmId && <GoogleTagManager gtmId={gtmId} />}
       <body>
         <script
           type="application/ld+json"

@@ -2475,9 +2475,24 @@ a:focus-visible {
   justify-content: center;
   width: 18px;
   height: 18px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #bc8e64;
   flex: 0 0 18px;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1;
+  margin: 0;
+}
+.command-dialog [cmdk-item] .command-project-icon {
+  margin: 0;
+  margin-left: 0 !important;
+  color: #bc8e64;
+  font-size: 11px;
+  font-family: inherit;
+  letter-spacing: normal;
+  max-width: none;
+  text-align: center;
 }
 .command-dialog [cmdk-item] svg viewBox {
   vector-effect: none;
@@ -2488,7 +2503,8 @@ a:focus-visible {
   padding: 0;
   overflow: visible;
 }
-.command-dialog [cmdk-item] span {
+.command-dialog [cmdk-item] > span:last-child,
+.command-dialog [cmdk-item] .command-item-badge {
   margin-left: auto;
   color: #7b6c61;
   font: 8px var(--font-mono);
@@ -3270,7 +3286,8 @@ a:focus-visible {
     padding: 7px 9px;
     font-size: 12px;
   }
-  .command-dialog [cmdk-item] span {
+  .command-dialog [cmdk-item] > span:last-child,
+  .command-dialog [cmdk-item] .command-item-badge {
     max-width: 42%;
     text-align: right;
     font-size: 8px;

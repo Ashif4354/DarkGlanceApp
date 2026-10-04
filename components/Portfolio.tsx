@@ -949,7 +949,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                         }
                       />
                       {proj.name}
-                      <span>{proj.eyebrow}</span>
+                      <span className="command-item-badge">{proj.eyebrow}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>

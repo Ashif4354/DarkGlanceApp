@@ -72,6 +72,9 @@ export const metadata: Metadata = {
     shortcut: site.identity.logo,
     apple: site.identity.logo,
   },
+  other: {
+    "google-adsense-account": "ca-pub-6347040738150367",
+  },
 };
 export const viewport: Viewport = {
   themeColor: "#050202",

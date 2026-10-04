@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Command } from "cmdk";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -94,7 +94,6 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     setStarTotal,
   } = useEggs();
   const [active, setActive] = useState("home"),
-    [scrolled, setScrolled] = useState(false),
     [callAnswered, setCallAnswered] = useState(false),
     [mobileOpen, setMobileOpen] = useState(false),
     [commandOpen, setCommandOpen] = useState(false),
@@ -106,6 +105,9 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     [cursorVisible, setCursorVisible] = useState(false);
   const greetingCount = useRef(0),
     lastGreeting = useRef(0),
+    lenisRef = useRef<{ scrollTo: (target: HTMLElement | string, options?: { offset?: number; duration?: number }) => void } | null>(null),
+    glowRef = useRef<HTMLDivElement>(null),
+    dotRef = useRef<HTMLDivElement>(null),
     reduceMotion = useReducedMotion();
   const bell = useAudioBell();
   const heroLongPress = useLongPress(() => openEgg("haki"), 1000, pirate);
@@ -119,9 +121,13 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
   );
   const scrollTo = useCallback(
     (id: string) => {
-      document
-        .getElementById(id)
-        ?.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth" });
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (lenisRef.current && !reduceMotion) {
+        lenisRef.current.scrollTo(el, { offset: -80, duration: 0.75 });
+      } else {
+        el.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth" });
+      }
       setMobileOpen(false);
       setCommandOpen(false);
     },
@@ -146,7 +152,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
       const past = window.scrollY > 80;
       if (past !== scrolledState) {
         scrolledState = past;
-        setScrolled(past);
+        document.querySelector(".site-header")?.classList.toggle("is-scrolled", past);
       }
     };
     onScroll();
@@ -186,25 +192,27 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
   }, [pirate]);
   useEffect(() => {
     if (reduceMotion) return;
-    let instance:
-      { raf: (time: number) => void; destroy: () => void } | undefined;
+    let lenis: { destroy: () => void } | null = null;
     let active = true;
     import("lenis").then(({ default: Lenis }) => {
       if (!active) return;
-      instance = new Lenis({
-        duration: 1.1,
+      const instance = new Lenis({
+        duration: 0.75,
         smoothWheel: true,
+        wheelMultiplier: 1.0,
+        syncTouch: false,
+        autoRaf: true,
         prevent: (node) => !!node.closest(".command-dialog"),
       });
-      const raf = (t: number) => {
-        instance?.raf(t);
-        requestAnimationFrame(raf);
-      };
-      requestAnimationFrame(raf);
+      lenis = instance;
+      lenisRef.current = instance;
     });
     return () => {
       active = false;
-      instance?.destroy();
+      if (lenis) {
+        lenis.destroy();
+      }
+      lenisRef.current = null;
     };
   }, [reduceMotion]);
   useEffect(() => {
@@ -243,8 +251,12 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
       }
       if (!ticking) {
         requestAnimationFrame(() => {
-          document.documentElement.style.setProperty("--cursor-x", `${lastX}px`);
-          document.documentElement.style.setProperty("--cursor-y", `${lastY}px`);
+          if (glowRef.current) {
+            glowRef.current.style.transform = `translate3d(${lastX}px, ${lastY}px, 0) translate(-50%, -50%)`;
+          }
+          if (dotRef.current) {
+            dotRef.current.style.transform = `translate3d(${lastX}px, ${lastY}px, 0) translate(-50%, -50%)`;
+          }
           ticking = false;
         });
         ticking = true;
@@ -277,7 +289,8 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     el?.addEventListener("click", onTouch);
     return () => el?.removeEventListener("click", onTouch);
   }, [pirate, openEgg]);
-  const projectOpen = (project: Project) => setSelected(project);
+  const projectOpen = useCallback((project: Project) => setSelected(project), []);
+  const handleEgg = useCallback(() => collectGlyph(1), [collectGlyph]);
   const links = (project: Project) =>
     [
       { label: "GitHub", href: project.links.github },
@@ -293,18 +306,20 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
   return (
     <div className={commandOpen ? "palette-open" : undefined}>
       <div
+        ref={glowRef}
         className="cursor-glow"
         style={{ opacity: cursorVisible ? 1 : 0 }}
         aria-hidden="true"
       />
       <div
+        ref={dotRef}
         className="cursor-dot"
         style={{ opacity: cursorVisible ? 1 : 0 }}
         aria-hidden="true"
       />
       <IntroLoader />
       <div className="grain" aria-hidden="true" />
-      <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
+      <header className="site-header">
         <a href="#home" className="brand-mark" aria-label="DarkGlance home">
           <span className="brand-symbol">
             <ProjectLogo
@@ -546,7 +561,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
               ))}
             </Tabs.List>
           </Tabs.Root>
-          <motion.div layout className="project-grid">
+          <div className="project-grid">
             {visibleProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
@@ -555,10 +570,10 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                 stars={pulse?.starsById?.[project.id]}
                 pirate={pirate}
                 onOpen={() => projectOpen(project)}
-                onEgg={() => collectGlyph(1)}
+                onEgg={handleEgg}
               />
             ))}
-          </motion.div>
+          </div>
           <div className="project-bottom-note">
             <span>BUILT WITH CURIOSITY</span>
             <span className="note-line" />
@@ -1128,7 +1143,7 @@ function IntroLoader() {
   );
 }
 
-function ProjectCard({
+const ProjectCard = memo(function ProjectCard({
   project,
   index,
   stars,
@@ -1143,30 +1158,43 @@ function ProjectCard({
   onOpen: () => void;
   onEgg: () => void;
 }) {
+  const cardRef = useRef<HTMLElement>(null);
+  const cardRectRef = useRef<DOMRect | null>(null);
+
+  const handlePointerEnter = () => {
+    if (cardRef.current) {
+      cardRectRef.current = cardRef.current.getBoundingClientRect();
+    }
+  };
+
+  const handlePointerMove = (e: ReactPointerEvent<HTMLElement>) => {
+    if (!cardRectRef.current && cardRef.current) {
+      cardRectRef.current = cardRef.current.getBoundingClientRect();
+    }
+    const r = cardRectRef.current;
+    if (r && cardRef.current) {
+      cardRef.current.style.setProperty(
+        "--spot-x",
+        `${((e.clientX - r.left) / r.width) * 100}%`,
+      );
+      cardRef.current.style.setProperty(
+        "--spot-y",
+        `${((e.clientY - r.top) / r.height) * 100}%`,
+      );
+    }
+  };
+
   return (
-    <motion.article
-      layout="position"
-      initial={false}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35, delay: index * 0.035 }}
+    <article
+      ref={cardRef}
       style={
         {
           "--spot-x": "50%",
           "--spot-y": "50%",
-        } as React.CSSProperties
+        } as CSSProperties
       }
-      onMouseMove={(e) => {
-        const card = e.currentTarget;
-        const r = card.getBoundingClientRect();
-        card.style.setProperty(
-          "--spot-x",
-          `${((e.clientX - r.left) / r.width) * 100}%`,
-        );
-        card.style.setProperty(
-          "--spot-y",
-          `${((e.clientY - r.top) / r.height) * 100}%`,
-        );
-      }}
+      onPointerEnter={handlePointerEnter}
+      onPointerMove={handlePointerMove}
       className={`project-card card-${project.size} card-${project.id} art-${project.art}`}
     >
       <button
@@ -1238,9 +1266,9 @@ function ProjectCard({
           ⌘
         </button>
       )}
-    </motion.article>
+    </article>
   );
-}
+});
 function ArtVisual({ type }: { type: string }) {
   if (type === "terminal")
     return (
@@ -1385,7 +1413,11 @@ function SkillChip({
     </button>
   );
 }
-function HeroMesh({ reduceMotion }: { reduceMotion: boolean }) {
+const HeroMesh = memo(function HeroMesh({
+  reduceMotion,
+}: {
+  reduceMotion: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (reduceMotion || !ref.current) return;
@@ -1485,7 +1517,7 @@ function HeroMesh({ reduceMotion }: { reduceMotion: boolean }) {
       aria-hidden="true"
     />
   );
-}
+});
 
 function BrandIcon({
   kind,

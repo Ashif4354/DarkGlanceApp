@@ -16,13 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { site, filters, type Project } from "@/data/site";
-import type {
-  Renderer as OGLRenderer,
-  Mesh as OGLMesh,
-  Triangle as OGLTriangle,
-  Camera as OGLCamera,
-  Program as OGLProgram,
-} from "ogl";
+
 import { useLongPress } from "@/hooks/useLongPress";
 import { useEggs } from "@/components/eggs/EggProvider";
 import {
@@ -1413,97 +1407,8 @@ const HeroMesh = memo(function HeroMesh({
 }: {
   reduceMotion: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (reduceMotion || !ref.current) return;
-    let renderer: OGLRenderer | undefined;
-    let running = true,
-      mesh: OGLMesh | undefined,
-      scene: OGLTriangle | undefined,
-      camera: OGLCamera | undefined,
-      program: OGLProgram | undefined;
-    let cleanup = () => {};
-    import("ogl")
-      .then(({ Renderer, Triangle, Program, Mesh, Vec2, Camera }) => {
-        if (!running || !ref.current) return;
-        renderer = new Renderer({
-          alpha: true,
-          antialias: false,
-          dpr: Math.min(window.devicePixelRatio || 1, 1.5),
-        });
-        const gl = renderer.gl;
-        gl.clearColor(0, 0, 0, 0);
-        ref.current.appendChild(gl.canvas);
-        const vertex = `attribute vec2 position; void main(){gl_Position=vec4(position,0.,1.);}`;
-        const fragment = `precision highp float; uniform vec2 u_resolution; uniform float u_time; uniform vec2 u_mouse; void main(){vec2 uv=gl_FragCoord.xy/u_resolution; vec3 col=vec3(.012,.006,.008); float t=u_time*.045; float left=exp(-distance(uv,vec2(.15+sin(t)*.03,.61)) * 3.4); float amber=exp(-distance(uv,vec2(.69+cos(t*.7)*.025,.49)) * 3.1); float pink=exp(-distance(uv,vec2(.28,.35+sin(t*.8)*.02))*3.7); float rose=exp(-distance(uv,vec2(.78,.78))*4.5); float mouse=exp(-distance(uv,u_mouse)*5.0); col+=vec3(1.,.16,.015)*left*.67; col+=vec3(1.,.51,.008)*amber*.65; col+=vec3(.89,.08,.31)*pink*.54; col+=vec3(.55,.13,.32)*rose*.4; col+=vec3(1.,.2,.04)*mouse*.08; col*=smoothstep(-.05,.85,uv.y); gl_FragColor=vec4(col,1.);}`;
-        scene = new Triangle(gl);
-        camera = new Camera(gl);
-        program = new Program(gl, {
-          vertex,
-          fragment,
-          uniforms: {
-            u_time: { value: 0 },
-            u_resolution: { value: new Vec2(1, 1) },
-            u_mouse: { value: new Vec2(0.5, 0.5) },
-          },
-        });
-        mesh = new Mesh(gl, { geometry: scene, program });
-        let bWidth = 1;
-        let bHeight = 1;
-        const resize = () => {
-          if (!ref.current || !renderer || !program) return;
-          const b = ref.current.getBoundingClientRect();
-          bWidth = b.width || 1;
-          bHeight = b.height || 1;
-          renderer.setSize(bWidth, bHeight);
-          program.uniforms.u_resolution.value.set(
-            bWidth * renderer.dpr,
-            bHeight * renderer.dpr,
-          );
-        };
-        resize();
-        let targetMouseX = 0.5;
-        let targetMouseY = 0.5;
-        const mouse = (e: PointerEvent) => {
-          targetMouseX = e.clientX / bWidth;
-          targetMouseY = 1 - e.clientY / bHeight;
-        };
-        window.addEventListener("resize", resize, { passive: true });
-        window.addEventListener("pointermove", mouse, { passive: true });
-        let isHeroVisible = true;
-        const observer = new IntersectionObserver(([entry]) => {
-          isHeroVisible = entry.isIntersecting;
-        });
-        observer.observe(ref.current!);
-        let raf = 0;
-        const draw = (time: number) => {
-          if (!running) return;
-          if (!document.hidden && isHeroVisible) {
-            program!.uniforms.u_time.value = time * 0.001;
-            program!.uniforms.u_mouse.value.set(targetMouseX, targetMouseY);
-            renderer!.render({ scene: mesh!, camera: camera! });
-          }
-          raf = requestAnimationFrame(draw);
-        };
-        raf = requestAnimationFrame(draw);
-        cleanup = () => {
-          cancelAnimationFrame(raf);
-          observer.disconnect();
-          window.removeEventListener("resize", resize);
-          window.removeEventListener("pointermove", mouse);
-          gl.canvas.remove();
-          gl.getExtension("WEBGL_lose_context")?.loseContext();
-        };
-      })
-      .catch(() => {});
-    return () => {
-      running = false;
-      cleanup();
-    };
-  }, [reduceMotion]);
   return (
     <div
-      ref={ref}
       className={`hero-mesh ${reduceMotion ? "mesh-static" : ""}`}
       aria-hidden="true"
     />

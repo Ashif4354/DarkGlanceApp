@@ -1,53 +1,66 @@
 # DarkGlance Portfolio
 
-A dark, cinematic portfolio built with Next.js 15 App Router, TypeScript, Tailwind CSS v4, themed Radix/shadcn-style primitives, Motion, Lenis, and OGL. All personal copy and project records are in `data/site.ts`.
+Personal developer portfolio web application for [DarkGlance](https://darkglance.in).
 
-## Run locally
+Built with Next.js, React, TypeScript, and Tailwind CSS.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18.17+ or later
+- npm, pnpm, or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/Ashif4354/DarkGlanceApp.git
+cd DarkGlanceApp
+
+# Install dependencies
 npm install
+
+# Copy environment variables
+cp .env.example .env
+```
+
+### Running Locally
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) with your browser to view the application.
 
-## Setup commands
+---
 
-This workspace was scaffolded directly with Next.js dependencies so the project could live at the workspace root. The visual primitives are locally themed and use Radix UI. To initialize the shadcn registry for future generated components:
+## Environment Variables
 
-```bash
-npx shadcn@latest init
-npx shadcn@latest add button badge card tabs dialog sheet command tooltip hover-card separator scroll-area sonner avatar skeleton
-```
+Configure the following variables in your `.env` file:
 
-## Environment
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Recommended | Canonical URL for the site (e.g. `https://darkglance.in`). |
+| `NEXT_PUBLIC_GTM_ID` | Optional | Google Tag Manager Container ID (e.g. `GTM-XXXXXXX`). |
+| `GITHUB_TOKEN` | Optional | GitHub Personal Access Token to raise GitHub API rate limits for repository data. |
 
-| Variable               | Required                   | Purpose                                                                                         |
-| ---------------------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`         | No                         | Optional GitHub REST API token for higher rate limits. Public repository data works without it. |
-| `NEXT_PUBLIC_SITE_URL` | Recommended for deployment | Canonical portfolio URL used by Open Graph metadata, `sitemap.xml`, and `robots.txt`.           |
+---
 
-Repository stars are fetched from GitHub and cached for 3600 seconds. If GitHub is unavailable, the project fallback counts in `data/site.ts` are used. Commit counts use only the supplied fallback values.
+## Scripts
 
-## Deploy
+| Command | Description |
+|---|---|
+| `npm run dev` | Runs the Next.js development server |
+| `npm run build` | Compiles the production build with static generation |
+| `npm run start` | Starts the production server locally |
+| `npm run lint` | Runs ESLint to check for code quality and formatting |
+| `npm run typecheck` | Checks TypeScript types across the codebase |
 
-Import this repository into Vercel, set `GITHUB_TOKEN` if desired and `NEXT_PUBLIC_SITE_URL` to the chosen portfolio domain, then deploy. The project uses Next.js metadata routes for Open Graph, sitemap, and robots output.
+---
 
-## Owner TODOs
+## License
 
-- Replace each abstract project cover with a real screenshot when available (`TODO: screenshot` slots are shown on project art).
-- Confirm/complete TicketRadar’s tech stack and add its GitHub repository URL if it is public.
-- Confirm/complete TacToeTic’s tech stack.
-- Decide whether to add employer or experience information; none is currently displayed.
-- Optionally replace the Wanted Poster’s abstract initials silhouette with an original owner illustration.
-- Tune the synthesized Den Den Mushi tone if desired. Sound starts muted and only plays after a visitor enables it.
-
-## Checks
-
-```bash
-npm run typecheck
-npm run lint
-npm run build
-```
-
-The project respects reduced motion, disables the custom cursor on touch devices, lazily creates the OGL canvas after hydration, and keeps a CSS gradient fallback for devices without WebGL.
+MIT © [Ashif (DarkGlance)](https://darkglance.in)

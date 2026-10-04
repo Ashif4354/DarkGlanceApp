@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Download, Share2, X } from "lucide-react";
+import { site } from "@/data/site";
 import type { EggViewProps } from "./registry-components";
 
 export function WantedPoster({
@@ -53,6 +54,15 @@ export function WantedPoster({
           <div className="wanted-paper" id="wanted-poster">
             <p className="wanted-overline">WANTED</p>
             <div className="wanted-silhouette">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={site.identity.logo}
+                alt="DarkGlance"
+                className="wanted-poster-logo"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
+              />
               <span>DG</span>
             </div>
             <h2 id="wanted-title">DarkGlance</h2>
@@ -73,3 +83,5 @@ export function WantedPoster({
     </Dialog.Root>
   );
 }
+
+export default WantedPoster;

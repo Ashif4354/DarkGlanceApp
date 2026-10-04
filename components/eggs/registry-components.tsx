@@ -1,5 +1,4 @@
-"use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Volume2, VolumeX } from "lucide-react";
 
 export type EggViewProps = {
@@ -9,14 +8,37 @@ export type EggViewProps = {
   onSound?: () => void;
 };
 export function LogPose({
-  progress = 0,
+  progress: externalProgress,
   next = "about",
   onClick,
 }: {
-  progress: number;
+  progress?: number;
   next: string;
   onClick: () => void;
 }) {
+  const [internalProgress, setInternalProgress] = useState(0);
+
+  useEffect(() => {
+    if (externalProgress !== undefined) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const max =
+            document.documentElement.scrollHeight - window.innerHeight || 1;
+          setInternalProgress(Math.min(window.scrollY / max, 1));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [externalProgress]);
+
+  const progress = externalProgress !== undefined ? externalProgress : internalProgress;
+
   return (
     <button
       className="log-pose"

@@ -8,9 +8,18 @@ import "./effects.css";
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
+  display: "swap",
 });
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+const mono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 export const metadata: Metadata = {
   ...(process.env.NEXT_PUBLIC_SITE_URL
     ? { metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL) }
@@ -52,6 +61,11 @@ export const metadata: Metadata = {
         }
       : {}),
   },
+  icons: {
+    icon: site.identity.logo,
+    shortcut: site.identity.logo,
+    apple: site.identity.logo,
+  },
 };
 export const viewport: Viewport = {
   themeColor: "#050202",
@@ -65,6 +79,7 @@ export default function RootLayout({
     "@type": "Person",
     name: site.identity.name,
     alternateName: site.identity.handle,
+    image: site.identity.logo,
     jobTitle: site.identity.title,
     address: {
       "@type": "PostalAddress",

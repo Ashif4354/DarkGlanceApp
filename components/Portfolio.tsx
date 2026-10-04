@@ -47,6 +47,40 @@ const nav = [
 ];
 const sectionName = (id: string) => (id === "home" ? "home" : id);
 
+function ProjectLogo({
+  src,
+  alt,
+  className,
+  fallback,
+  width,
+  height,
+}: {
+  src?: string;
+  alt: string;
+  className?: string;
+  fallback?: React.ReactNode;
+  width?: number;
+  height?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return fallback ? <>{fallback}</> : null;
+  }
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function Portfolio({ pulse }: { pulse: Pulse }) {
   const {
     pirate,
@@ -61,7 +95,6 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
   } = useEggs();
   const [active, setActive] = useState("home"),
     [scrolled, setScrolled] = useState(false),
-    [scrollProgress, setScrollProgress] = useState(0),
     [callAnswered, setCallAnswered] = useState(false),
     [mobileOpen, setMobileOpen] = useState(false),
     [commandOpen, setCommandOpen] = useState(false),
@@ -70,7 +103,6 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     [hovered, setHovered] = useState<string | null>(null),
     [copied, setCopied] = useState(false),
     [role, setRole] = useState(0),
-    [intro, setIntro] = useState(false),
     [cursorVisible, setCursorVisible] = useState(false);
   const greetingCount = useRef(0),
     lastGreeting = useRef(0),
@@ -108,26 +140,31 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     }
   };
   useEffect(() => {
-    const timer = window.setTimeout(() => setIntro(true), 100);
     const cycle = window.setInterval(() => setRole((v) => (v + 1) % 3), 3200);
+    let scrolledState = false;
     const onScroll = () => {
-      setScrolled(window.scrollY > 80);
-      setScrollProgress(
-        window.scrollY /
-          (document.documentElement.scrollHeight - window.innerHeight || 1),
-      );
-      const sections = [
-        ...document.querySelectorAll<HTMLElement>("[data-section]"),
-      ];
-      let current = "home";
-      for (const s of sections) {
-        if (s.getBoundingClientRect().top < window.innerHeight * 0.45)
-          current = s.id;
+      const past = window.scrollY > 80;
+      if (past !== scrolledState) {
+        scrolledState = past;
+        setScrolled(past);
       }
-      setActive(current);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: 0 },
+    );
+    const sections = document.querySelectorAll<HTMLElement>("[data-section]");
+    sections.forEach((s) => observer.observe(s));
+
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -141,9 +178,9 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
         "color:#ff9d43;font-weight:bold",
       );
     return () => {
-      clearTimeout(timer);
       clearInterval(cycle);
       window.removeEventListener("scroll", onScroll);
+      observer.disconnect();
       window.removeEventListener("keydown", key);
     };
   }, [pirate]);
@@ -192,16 +229,33 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
     };
   }, [commandOpen]);
   useEffect(() => {
+    let isVisible = false;
+    let ticking = false;
+    let lastX = -100;
+    let lastY = -100;
+
     const onMove = (e: PointerEvent) => {
-      document.documentElement.style.setProperty("--cursor-x", `${e.clientX}px`);
-      document.documentElement.style.setProperty("--cursor-y", `${e.clientY}px`);
-      setCursorVisible(true);
-      document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
-      document.documentElement.style.setProperty("--my", `${e.clientY}px`);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (!isVisible) {
+        isVisible = true;
+        setCursorVisible(true);
+      }
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty("--cursor-x", `${lastX}px`);
+          document.documentElement.style.setProperty("--cursor-y", `${lastY}px`);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    const onLeave = () => setCursorVisible(false);
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerout", onLeave);
+    const onLeave = () => {
+      isVisible = false;
+      setCursorVisible(false);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerout", onLeave, { passive: true });
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerout", onLeave);
@@ -253,7 +307,16 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
       <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
         <a href="#home" className="brand-mark" aria-label="DarkGlance home">
           <span className="brand-symbol">
-            D<span>•</span>
+            <ProjectLogo
+              src={site.identity.logo}
+              alt="DarkGlance"
+              className="brand-logo-img"
+              fallback={
+                <>
+                  D<span>•</span>
+                </>
+              }
+            />
           </span>
           <span className="brand-name">DarkGlance</span>
         </a>
@@ -294,7 +357,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
         <section className="hero" id="home" data-section>
           <HeroMesh reduceMotion={!!reduceMotion} />
           <div className="hero-vignette" />
-          <div className={`hero-content ${intro ? "is-intro" : ""}`}>
+          <div className="hero-content">
             <div className="hero-kicker">
               <span className="status-pip" /> <span>INDEPENDENT DEVELOPER</span>
               <i /> CHENNAI, INDIA
@@ -374,6 +437,21 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
           </div>
           <div className="about-grid">
             <div className="about-copy">
+              <div className="about-author-header">
+                <div className="about-avatar-frame">
+                  <ProjectLogo
+                    src={site.identity.avatar}
+                    alt={site.identity.name}
+                    className="about-avatar-img"
+                  />
+                </div>
+                <div className="about-author-meta">
+                  <span className="about-handle">@{site.identity.handle}</span>
+                  <span className="about-title">
+                    {site.identity.name} · {site.identity.title}
+                  </span>
+                </div>
+              </div>
               <h2>
                 Curiosity is
                 <br />
@@ -474,7 +552,7 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                 key={project.id}
                 project={project}
                 index={index}
-                stars={pulse.starsById[project.id]}
+                stars={pulse?.starsById?.[project.id]}
                 pirate={pirate}
                 onOpen={() => projectOpen(project)}
                 onEgg={() => collectGlyph(1)}
@@ -733,7 +811,16 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
               aria-label="DarkGlance home"
             >
               <span className="brand-symbol">
-                D<span>•</span>
+                <ProjectLogo
+                  src={site.identity.logo}
+                  alt="DarkGlance"
+                  className="brand-logo-img"
+                  fallback={
+                    <>
+                      D<span>•</span>
+                    </>
+                  }
+                />
               </span>
             </a>
             <a
@@ -768,7 +855,6 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
       </main>
       {pirate && (
         <LogPose
-          progress={Math.min(scrollProgress, 1)}
           next={sectionName(
             ["home", "about", "work", "stack", "pulse", "contact"][
               (["home", "about", "work", "stack", "pulse", "contact"].indexOf(
@@ -787,9 +873,22 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
           <Dialog.Content className="mobile-sheet">
             <Dialog.Title className="sr-only">Navigation</Dialog.Title>
             <div className="sheet-head">
-              <a className="brand-mark" href="#home">
+              <a
+                className="brand-mark"
+                href="#home"
+                onClick={() => setMobileOpen(false)}
+              >
                 <span className="brand-symbol">
-                  D<span>•</span>
+                  <ProjectLogo
+                    src={site.identity.logo}
+                    alt="DarkGlance"
+                    className="brand-logo-img"
+                    fallback={
+                      <>
+                        D<span>•</span>
+                      </>
+                    }
+                  />
                 </span>
                 <span className="brand-name">DarkGlance</span>
               </a>
@@ -829,14 +928,28 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
                       <span>Jump to section</span>
                     </Command.Item>
                   ))}
-                  <Command.Item
-                    onSelect={() => {
-                      setCommandOpen(false);
-                      setSelected(site.projects[0]);
-                    }}
-                  >
-                    ◈ &nbsp;Open StreamStorm<span>Project preview</span>
-                  </Command.Item>
+                </Command.Group>
+                <Command.Group heading="PROJECTS">
+                  {site.projects.map((proj) => (
+                    <Command.Item
+                      key={proj.id}
+                      onSelect={() => {
+                        setCommandOpen(false);
+                        setSelected(proj);
+                      }}
+                    >
+                      <ProjectLogo
+                        src={proj.logo}
+                        alt=""
+                        className="command-project-logo"
+                        fallback={
+                          <span className="command-project-icon">◈</span>
+                        }
+                      />
+                      {proj.name}
+                      <span>{proj.eyebrow}</span>
+                    </Command.Item>
+                  ))}
                 </Command.Group>
                 <Command.Group heading="QUICK ACTIONS">
                   <Command.Item onSelect={copyEmail}>
@@ -909,7 +1022,21 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
               <>
                 <div className={`dialog-art art-${selected.art}`}>
                   <span>{selected.eyebrow}</span>
-                  <b>{selected.name}</b>
+                  <div className="dialog-art-header">
+                    <div className="dialog-art-logo-box">
+                      <ProjectLogo
+                        src={selected.logo}
+                        alt={`${selected.name} logo`}
+                        className="dialog-art-logo"
+                        fallback={
+                          <span className="dialog-logo-fallback">
+                            {selected.name.charAt(0)}
+                          </span>
+                        }
+                      />
+                    </div>
+                    <b>{selected.name}</b>
+                  </div>
                   <div className="art-grid" />
                   <i className="art-orb" />
                 </div>
@@ -973,8 +1100,9 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
 
 function IntroLoader() {
   const [progress, setProgress] = useState(0),
-    [visible, setVisible] = useState(true);
+    [visible, setVisible] = useState(false);
   useEffect(() => {
+    setVisible(true);
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -986,7 +1114,8 @@ function IntroLoader() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
-  return visible ? (
+  if (!visible) return null;
+  return (
     <div className="ship-loader" aria-hidden="true">
       <svg viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="23" />
@@ -996,8 +1125,9 @@ function IntroLoader() {
       <span>SETTING SAIL… {progress}</span>
       <i />
     </div>
-  ) : null;
+  );
 }
+
 function ProjectCard({
   project,
   index,
@@ -1013,27 +1143,31 @@ function ProjectCard({
   onOpen: () => void;
   onEgg: () => void;
 }) {
-  const [spot, setSpot] = useState({ x: 50, y: 50 });
   return (
     <motion.article
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.38, delay: index * 0.035 }}
-      onMouseMove={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        setSpot({
-          x: ((e.clientX - r.left) / r.width) * 100,
-          y: ((e.clientY - r.top) / r.height) * 100,
-        });
-      }}
-      className={`project-card card-${project.size} card-${project.id} art-${project.art}`}
+      layout="position"
+      initial={false}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35, delay: index * 0.035 }}
       style={
         {
-          "--spot-x": `${spot.x}%`,
-          "--spot-y": `${spot.y}%`,
+          "--spot-x": "50%",
+          "--spot-y": "50%",
         } as React.CSSProperties
       }
+      onMouseMove={(e) => {
+        const card = e.currentTarget;
+        const r = card.getBoundingClientRect();
+        card.style.setProperty(
+          "--spot-x",
+          `${((e.clientX - r.left) / r.width) * 100}%`,
+        );
+        card.style.setProperty(
+          "--spot-y",
+          `${((e.clientY - r.top) / r.height) * 100}%`,
+        );
+      }}
+      className={`project-card card-${project.size} card-${project.id} art-${project.art}`}
     >
       <button
         className="card-hit"
@@ -1047,16 +1181,31 @@ function ProjectCard({
             <ArtVisual type={project.art} />
           </div>
           <span className="card-art-name">
-            {project.name}
+            <span>{project.name}</span>
             <ArrowUpRight size={15} />
           </span>
-          <span className="card-art-label">TODO: screenshot</span>
         </div>
         <div className="card-info">
           <div className="card-title-row">
-            <div>
-              <h3>{project.name}</h3>
-              <p>{project.oneLiner}</p>
+            <div className="card-title-wrap">
+              <div className="card-title-logo-frame">
+                <ProjectLogo
+                  src={project.logo}
+                  alt={`${project.name} logo`}
+                  width={38}
+                  height={38}
+                  className="card-title-logo"
+                  fallback={
+                    <span className="card-title-logo-fallback">
+                      {project.name.charAt(0)}
+                    </span>
+                  }
+                />
+              </div>
+              <div>
+                <h3>{project.name}</h3>
+                <p>{project.oneLiner}</p>
+              </div>
             </div>
             <span className="card-open">
               <ArrowUpRight size={18} />
@@ -1272,24 +1421,29 @@ function HeroMesh({ reduceMotion }: { reduceMotion: boolean }) {
           },
         });
         mesh = new Mesh(gl, { geometry: scene, program });
+        let bWidth = 1;
+        let bHeight = 1;
         const resize = () => {
-          const b = ref.current!.getBoundingClientRect();
-          renderer!.setSize(b.width, b.height);
-          program!.uniforms.u_resolution.value.set(
-            b.width * renderer!.dpr,
-            b.height * renderer!.dpr,
+          if (!ref.current || !renderer || !program) return;
+          const b = ref.current.getBoundingClientRect();
+          bWidth = b.width || 1;
+          bHeight = b.height || 1;
+          renderer.setSize(bWidth, bHeight);
+          program.uniforms.u_resolution.value.set(
+            bWidth * renderer.dpr,
+            bHeight * renderer.dpr,
           );
         };
         resize();
         const mouse = (e: PointerEvent) => {
-          const b = ref.current!.getBoundingClientRect();
-          program!.uniforms.u_mouse.value.set(
-            e.clientX / b.width,
-            1 - e.clientY / b.height,
+          if (!program) return;
+          program.uniforms.u_mouse.value.set(
+            e.clientX / bWidth,
+            1 - e.clientY / bHeight,
           );
         };
-        window.addEventListener("resize", resize);
-        window.addEventListener("pointermove", mouse);
+        window.addEventListener("resize", resize, { passive: true });
+        window.addEventListener("pointermove", mouse, { passive: true });
         const observer = new IntersectionObserver(([entry]) => {
           document.documentElement.dataset.heroVisible = entry.isIntersecting
             ? "yes"

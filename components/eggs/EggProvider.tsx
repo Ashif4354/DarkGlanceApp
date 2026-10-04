@@ -7,19 +7,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import dynamic from "next/dynamic";
 import { Toaster, toast } from "sonner";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { eggRegistry } from "@/lib/eggs";
 import type { EggViewProps } from "./registry-components";
-const WantedPoster = dynamic(
-  () => import("./WantedPoster").then((module) => module.WantedPoster),
-  { ssr: false },
-);
-const TreasureDialog = dynamic(
-  () => import("./TreasureDialog").then((module) => module.TreasureDialog),
-  { ssr: false },
-);
+import { WantedPoster } from "./WantedPoster";
+import { TreasureDialog } from "./TreasureDialog";
 type EggContextValue = {
   pirate: boolean;
   setPirate: (v: boolean) => void;

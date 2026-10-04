@@ -103,10 +103,10 @@ a:focus-visible {
   height: 280px;
   pointer-events: none;
   border-radius: 50%;
-  left: var(--cursor-x, -100px);
-  top: var(--cursor-y, -100px);
-  transform: translate3d(-50%, -50%, 0);
-  will-change: left, top;
+  left: 0;
+  top: 0;
+  transform: translate3d(calc(var(--cursor-x, -100px) - 50%), calc(var(--cursor-y, -100px) - 50%), 0);
+  will-change: transform;
   background: radial-gradient(circle, #ff8a0019, transparent 68%);
   transition: opacity 0.3s;
 }
@@ -118,10 +118,10 @@ a:focus-visible {
   pointer-events: none;
   border-radius: 50%;
   background: #ffc25a;
-  left: var(--cursor-x, -100px);
-  top: var(--cursor-y, -100px);
-  transform: translate3d(-50%, -50%, 0);
-  will-change: left, top;
+  left: 0;
+  top: 0;
+  transform: translate3d(calc(var(--cursor-x, -100px) - 50%), calc(var(--cursor-y, -100px) - 50%), 0);
+  will-change: transform;
   box-shadow: 0 0 12px #ff8a00aa;
 }
 .rubber-mode .cursor-glow {
@@ -160,21 +160,37 @@ a:focus-visible {
   min-width: 190px;
 }
 .brand-symbol {
-  width: 31px;
-  height: 31px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   font: 700 17px var(--font-display);
-  background: linear-gradient(135deg, #ff3b00, #ffb300);
+  background: #120c0a;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #170b05;
-  box-shadow: 0 0 24px #ff8a0033;
+  box-shadow: 0 0 16px rgba(255, 138, 0, 0.28);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.brand-mark:hover .brand-symbol {
+  transform: scale(1.06);
+  border-color: rgba(255, 179, 0, 0.6);
+  box-shadow: 0 0 22px rgba(255, 138, 0, 0.45);
 }
 .brand-symbol span {
   color: #fff;
   position: absolute;
   margin: 13px 0 0 15px;
   font-size: 8px;
+}
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
 }
 .brand-name {
   font: 600 14px var(--font-display);
@@ -311,13 +327,6 @@ a:focus-visible {
   position: relative;
   z-index: 2;
   max-width: 740px;
-  opacity: 0;
-  transform: translateY(22px);
-  transition:
-    opacity 0.8s ease,
-    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.hero-content.is-intro {
   opacity: 1;
   transform: none;
 }
@@ -368,7 +377,7 @@ a:focus-visible {
 }
 .hero-name {
   font: 700 clamp(88px, 12vw, 158px)/0.94 var(--font-display);
-  letter-spacing: -0.095em;
+  letter-spacing: -0.04em;
   color: #fff5e9;
   text-shadow: 0 15px 60px #0006;
 }
@@ -562,6 +571,44 @@ a:focus-visible {
   gap: 80px;
   align-items: center;
 }
+.about-author-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.about-avatar-frame {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.25);
+  background: #110c0a;
+  flex-shrink: 0;
+}
+.about-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.about-author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.about-handle {
+  font: 600 15px var(--font-display);
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.about-title {
+  font: 10px var(--font-mono);
+  color: #a8998d;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .about-copy h2,
 .projects-title-row h2,
 .skills-intro h2,
@@ -728,7 +775,6 @@ a:focus-visible {
   background: #100c0b;
   transition:
     border-color 0.3s,
-    transform 0.35s,
     box-shadow 0.3s;
   transform-style: preserve-3d;
 }
@@ -771,9 +817,11 @@ a:focus-visible {
   transition: opacity 0.3s;
 }
 .project-card:hover {
-  transform: translateY(-5px) rotateX(0.6deg);
   border-color: #ffb30040;
   box-shadow: 0 22px 55px #0008;
+}
+.project-card:hover .card-hit {
+  transform: translateY(-4px);
 }
 .project-card:hover:before,
 .project-card:hover:after {
@@ -793,11 +841,11 @@ a:focus-visible {
 .card-hit {
   display: block;
   width: 100%;
-  height: 100%;
   text-align: left;
   background: none;
   border: 0;
   padding: 0;
+  transition: transform 0.25s ease;
 }
 .card-art {
   position: relative;
@@ -849,6 +897,26 @@ a:focus-visible {
   font: 600 15px var(--font-display);
   z-index: 2;
 }
+.card-art-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+.card-art-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .card-art-label {
   position: absolute;
   right: 18px;
@@ -872,6 +940,45 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+.card-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.card-title-logo-frame {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.project-card:hover .card-title-logo-frame {
+  transform: translateY(-1px) scale(1.03);
+  border-color: rgba(255, 179, 0, 0.4);
+}
+.card-title-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.card-title-logo-fallback {
+  font: 700 16px var(--font-display);
+  color: #ffb45f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 .card-title-row h3 {
   font: 600 18px var(--font-display);
@@ -1046,10 +1153,12 @@ a:focus-visible {
   left: 52%;
   top: 42%;
   transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 .stream-orbit.o2 {
   width: 370px;
   height: 370px;
+  pointer-events: none;
 }
 .terminal-art {
   width: 70%;
@@ -2130,7 +2239,44 @@ a:focus-visible {
   font: 9px var(--font-mono);
   letter-spacing: 0.12em;
 }
-.dialog-art > b {
+.dialog-art-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.dialog-art-logo-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(255, 179, 0, 0.12);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+.dialog-art-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.dialog-logo-fallback {
+  font: 700 24px var(--font-display);
+  color: #ffb45f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dialog-art > b,
+.dialog-art-header > b {
   position: relative;
   z-index: 2;
   font: 600 33px var(--font-display);
@@ -2356,6 +2502,23 @@ a:focus-visible {
   flex: 0 0 16px;
   color: #bc8e64;
 }
+.command-project-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: contain;
+  flex: 0 0 18px;
+}
+.command-project-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #bc8e64;
+  flex: 0 0 18px;
+  font-size: 12px;
+}
 .command-dialog [cmdk-item] svg viewBox {
   vector-effect: none;
 }
@@ -2532,6 +2695,21 @@ a:focus-visible {
   color: #ffce83;
   font: 700 29px var(--font-display);
   filter: drop-shadow(3px 3px 3px #54351c);
+  position: relative;
+}
+.wanted-poster-logo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: luminosity;
+  opacity: 0.9;
+  z-index: 1;
+}
+.wanted-silhouette span {
+  position: relative;
+  z-index: 2;
 }
 .wanted-paper h2 {
   font: 900 32px/0.96 var(--font-display);
@@ -2797,8 +2975,8 @@ a:focus-visible {
     font-size: 25px;
   }
   .hero-name {
-    font-size: clamp(68px, 17vw, 95px);
-    letter-spacing: -0.09em;
+    font-size: clamp(48px, 13vw, 80px);
+    letter-spacing: -0.02em;
   }
   .role-row {
     font-size: 12px;
@@ -3133,7 +3311,7 @@ a:focus-visible {
   justify-content: center;
   align-items: center;
   gap: 13px;
-  background: #050202eb;
+  background: transparent;
   pointer-events: none;
   animation: loader-out 0.22s ease 760ms forwards;
 }

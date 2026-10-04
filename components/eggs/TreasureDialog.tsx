@@ -33,3 +33,5 @@ export function TreasureDialog({ close }: EggViewProps) {
     </Dialog.Root>
   );
 }
+
+export default TreasureDialog;

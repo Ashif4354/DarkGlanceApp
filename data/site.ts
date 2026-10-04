@@ -19,6 +19,7 @@ export type Project = {
   stats?: { commits?: number; stars?: number; forks?: number };
   art: string;
   size: "feature" | "wide" | "normal";
+  logo?: string;
 };
 
 export const site = {
@@ -28,6 +29,8 @@ export const site = {
     title: "FullStack Developer",
     location: "Chennai, India",
     email: "darkglance.developer@gmail.com",
+    logo: "https://cdn.darkglance.in/portfolio/me/DG.png",
+    avatar: "https://cdn.darkglance.in/portfolio/me/DG.png",
     tagline: "I build tools nobody asked for, then everybody needs.",
     bio: "I love building something new—sometimes for my own use cases, sometimes for someone else’s. It’s my hobby, my passion, and usually how I spend a free afternoon. Most of my projects are public and MIT licensed. Also, I’m a big One Piece fan.",
     links: {
@@ -81,6 +84,7 @@ export const site = {
         live: "https://streamstorm.darkglance.in/",
       },
       stats: { commits: 595, stars: 38, forks: 13 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/streamstorm/logo.png",
       art: "stream",
       size: "feature",
     },
@@ -100,6 +104,7 @@ export const site = {
       tech: ["FastAPI", "React", "Vite", "Firebase", "Twilio"],
       categories: ["Automation", "Web", "Tools"],
       links: { live: "https://ticketradar.darkglance.in/" },
+      logo: "https://cdn.darkglance.in/portfolio/projects/ticketradar/logo.png",
       art: "radar",
       size: "wide",
     },
@@ -119,6 +124,7 @@ export const site = {
         package: "https://pypi.org/project/dgupdater/",
       },
       stats: { commits: 99, stars: 16 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/dgupdater/logo.png",
       art: "terminal",
       size: "normal",
     },
@@ -138,6 +144,7 @@ export const site = {
         live: "https://cyclictasks.darkglance.in/",
       },
       stats: { commits: 84, stars: 15 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/cyclictasks/logo.png",
       art: "pulse",
       size: "normal",
     },
@@ -157,6 +164,7 @@ export const site = {
         live: "https://pagevision.darkglance.in/",
       },
       stats: { stars: 12 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/pagevision/logo.png",
       art: "vision",
       size: "normal",
     },
@@ -174,6 +182,7 @@ export const site = {
         playStore: "https://play.google.com/store/apps/details?id=com.dgbuzzer",
       },
       stats: { stars: 13 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/dgbuzzer/logo.png",
       art: "buzzer",
       size: "normal",
     },
@@ -193,6 +202,7 @@ export const site = {
         live: "https://tactoetic.darkglance.in/",
       },
       stats: { stars: 13 },
+      logo: "https://cdn.darkglance.in/portfolio/projects/tactoetic/logo.png",
       art: "grid",
       size: "normal",
     },

@@ -124,9 +124,9 @@
 .project-highlights span {
   border: 1px solid #ffb30024;
   border-radius: 999px;
-  padding: 6px 9px;
+  padding: 6px 11px;
   color: #e3b87e;
-  font: 8px var(--font-mono);
+  font: 11px var(--font-mono);
 }
 .alert-pings {
   position: absolute;

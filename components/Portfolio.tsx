@@ -13,7 +13,6 @@ import {
   Copy,
   Menu,
   Radio,
-  Sparkles,
   X,
 } from "lucide-react";
 import { site, filters, type Project } from "@/data/site";
@@ -642,22 +641,6 @@ export function Portfolio({ pulse }: { pulse: Pulse }) {
           {pirate && hovered && [...site.skills.strong].includes(hovered) && (
             <FruitHint skill={hovered} close={() => setHovered(null)} />
           )}
-          <div className="learning-row">
-            <span className="learning-label">
-              <i /> CURRENTLY LEARNING
-            </span>
-            <div className="learning-skills">
-              {site.skills.learning.map((x) => (
-                <span key={x} title="Still training in the New World">
-                  {x}
-                  <b>↗</b>
-                </span>
-              ))}
-            </div>
-            <span className="learning-note">
-              Still training in the New World <Sparkles size={13} />
-            </span>
-          </div>
         </section>
 
         <section className="section pulse-section" id="pulse" data-section>
